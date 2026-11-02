@@ -143,6 +143,210 @@ NODE_OPTIONS=--experimental-vm-modules npm test -- --runInBand
 
 **Status:** All done including production-startup verification.
 
+### GIT repository setup
+
+**Status: Completed
+
+The Syllens NestJS backend was initialized, configured, tested, and published to GitHub.
+
+**Implementation:
+
+- Initialized NestJS with TypeScript.
+- Configured CommonJS and Jest.
+- Implemented the Health module.
+- Resolved TypeScript and Jest module compatibility issues.
+- Configured repository-specific Git identity.
+- Created the initial Git commit.
+- Pushed the application to personal GitHub.
+
+**Verification:
+
+- Build: Passed
+- Unit tests: 1 passed
+- Lint: 0 warnings and 0 errors
+- Production startup: Successful
+- Health route: Registered
+- GitHub push: Successful
+
+**Initial commit:** `a01b9d2`
+
+**Repository:** <https://github.com/devigitlearn/syllens>
+
+**Key Learning:**
+
+Established a working NestJS backend development workflow with version control, testing, linting, production compilation, and GitHub integration.
+
 Next Milestone
 
 ## Milestone 2 — Environment Configuration, Swagger Documentation, and Global Validation
+
+### Step 1: Environment Configuration Using @nestjs/config
+
+**Objective
+
+Implement a centralized configuration system for Syllens using NestJS ConfigModule and Zod validation.
+
+This allows the application to use different settings for development, testing, and production without hardcoding environment-specific values.
+
+### 1. Install Dependencies
+
+```bash
+npm install @nestjs/config zod
+```
+
+**Dependencies
+
+- `@nestjs/config` — Loads and manages application configuration.
+- `zod` — Validates environment variables and transforms their values.
+
+### 2. Create Environment Files
+
+Created `.env` to store local configuration.
+
+```env
+NODE_ENV=development
+PORT=3000
+```
+
+Created `.env.example` to document the required environment variables.
+
+```env
+NODE_ENV=development
+PORT=3000
+```
+
+**Important
+
+- `.env` is excluded from Git.
+- `.env.example` can be committed because it contains no secrets.
+- Runtime environment variables take precedence over `.env` by default.
+
+### 3. Create Environment Validation
+
+Created:
+
+`src/config/env.validation.ts`
+
+Implemented Zod validation for:
+
+- `NODE_ENV`: development, test, or production.
+- `PORT`: Integer between 1 and 65535.
+
+Default values:
+
+- `NODE_ENV = development`
+- `PORT = 3000`
+
+**Why validation matters
+
+Invalid configuration should be detected during application startup rather than causing errors during execution.
+
+### 4. Register ConfigModule
+
+Updated `src/app.module.ts` to register:
+
+```typescript
+ConfigModule.forRoot({
+  isGlobal: true,
+  envFilePath: '.env',
+  validationSchema: envValidationSchema,
+})
+```
+
+**Explanation
+
+- `isGlobal: true` — Makes ConfigService available across application modules.
+- `envFilePath` — Specifies the environment file.
+- `validationSchema` — Validates configuration before application startup completes.
+
+### 5. Update Application Bootstrap
+
+Updated `src/main.ts` to retrieve the port from ConfigService.
+
+```typescript
+const configService = app.get(ConfigService);
+
+const port = configService.getOrThrow<number>('PORT');
+
+await app.listen(port);
+```
+
+**Concept learned
+
+ConfigService provides centralized access to validated application settings.
+
+### 6. Configuration Verification
+
+**Test A — Normal Startup
+
+Configured `PORT=3000` and started the application.
+
+Command:
+
+`npm run start:dev`
+
+Result: Pending verification.
+
+**Test B — Change Port
+
+Changed `PORT` from `3000` to `3001`.
+
+Expected: The application starts on port 3001.
+
+Result: Pending verification.
+
+**Test C — Invalid Port
+
+Configured `PORT=invalid`.
+
+Expected: Startup fails due to configuration validation.
+
+Result: Pending verification.
+
+Restored the original configuration after testing.
+
+### 7. Build and Test Commands
+
+```bash
+npm run build
+npm test -- --runInBand
+npm run lint
+```
+
+Results: Pending verification.
+
+### 8. Project Structure
+
+```text
+syllens/
+├── src/
+│   ├── config/
+│   │   └── env.validation.ts
+│   ├── health/
+│   ├── app.module.ts
+│   └── main.ts
+├── .env
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+### 9. Important Concepts Learned
+
+1. Environment variables separate configuration from application logic.
+2. ConfigModule loads and manages configuration in NestJS.
+3. ConfigService provides access to configuration values.
+4. Zod validates values and performs type conversion.
+5. Invalid configuration can prevent application startup.
+6. `.env` files should not be committed to Git.
+7. `.env.example` documents the configuration needed to run the application.
+8. Environment-specific settings support deployment across development, testing, and production environments.
+
+### 10. Status
+
+Implementation local verification done.
+
+**Step 2: Swagger/OpenAPI Documentation
+
+We will document the Syllens REST API and make endpoints testable through Swagger UI.
