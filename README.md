@@ -472,3 +472,134 @@ Before production deployment, documentation access must be reviewed and appropri
 ** Step 3: Request Validation
 
 We will learn how to validate incoming API requests using DTOs and global validation mechanisms.
+
+Implement centralized request validation in Syllens using NestJS ValidationPipe and class-based DTOs.
+
+This ensures invalid incoming API requests are rejected before reaching application business logic.
+
+```bash
+npm install class-validator class-transformer
+```
+
+- `class-validator` provides validation decorators.
+- `class-transformer` transforms incoming payloads into DTO instances.
+
+### 2. Configure Global ValidationPipe
+
+Updated `src/main.ts`:
+
+```typescript
+app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+);
+```
+
+**Configuration explanation:**
+
+- `whitelist`: Restricts accepted properties to those declared with validation decorators.
+- `forbidNonWhitelisted`: Rejects unexpected properties.
+- `transform`: Converts payloads to the corresponding DTO class instances.
+
+### 3. Create Study Questions Module
+
+Generated:
+
+```bash
+npx nest generate module study-questions
+npx nest generate controller study-questions --no-spec
+npx nest generate service study-questions --no-spec
+```
+
+Implemented:
+
+- `StudyQuestionsModule`
+- `StudyQuestionsController`
+- `StudyQuestionsService`
+- `PreviewQuestionDto`
+
+### 4. Create the Request DTO
+
+File: `src/study-questions/dto/preview-question.dto.ts`
+
+Validation rules:
+
+| Property | Validation |
+| `question` | Required, string, non-empty, maximum 1000 characters |
+| `documentId` | Required, valid UUID string |
+
+Swagger decorators document both properties in the generated OpenAPI specification.
+
+### 5. Implement Validation Endpoint
+
+**Endpoint:** `POST /study-questions/preview`
+
+**Purpose:** Validate a student question and document identifier without calling Gemini or the database.
+
+Example request:
+
+```json
+{
+  "question": "What is the Basic Structure Doctrine?",
+  "documentId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+Expected successful response:
+
+```json
+{
+  "message": "Question validated successfully",
+  "data": {
+    "question": "What is the Basic Structure Doctrine?",
+    "documentId": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+
+Default successful HTTP status: `201 Created`.
+
+### 6. Validation Test Cases
+
+| Scenario | Expected HTTP status |
+| Valid question and UUID | 201 |
+| Empty question | 400 |
+| Invalid UUID | 400 |
+| Unexpected property | 400 |
+| Missing required property | 400 |
+
+Manual testing through Swagger is required to verify these behaviors.
+
+### 7. Important Concepts Learned
+
+- DTOs define request data contracts.
+- TypeScript types alone do not validate runtime request data.
+- Global ValidationPipe validates applicable controller inputs.
+- `class-validator` decorators define field-level constraints.
+- `class-transformer` creates DTO instances.
+- Unknown properties can be rejected.
+- Swagger documents request schemas and validation expectations.
+- Input validation is different from authentication and authorization.
+
+### 8. Verification Commands
+
+```bash
+npm run build
+npm test -- --runInBand
+npm run lint
+```
+
+### 9. Current Limitations
+
+- Questions are validated but are not sent to Gemini.
+- Document IDs are validated for format but are not checked against a database.
+- Authentication and student document ownership checks are not implemented.
+- Whitespace-only questions require additional validation.
+- Automated tests for the new validation endpoint are still to be added.
+
+Step 4: API Error Handling and Response Conventions.
+
+Establish consistent error responses, safe exception handling, and API route conventions before implementing document upload functionality.
