@@ -350,3 +350,125 @@ Implementation local verification done.
 **Step 2: Swagger/OpenAPI Documentation
 
 We will document the Syllens REST API and make endpoints testable through Swagger UI.
+
+Integrate Swagger into the Syllens NestJS backend to automatically generate API documentation and provide an interactive interface for testing REST endpoints.
+
+### 1. Install Swagger
+
+```bash
+npm install @nestjs/swagger
+```
+
+### 2. Configure Swagger
+
+Updated `src/main.ts` using:
+
+- `DocumentBuilder`
+- `SwaggerModule.createDocument()`
+- `SwaggerModule.setup()`
+
+Configured API metadata:
+
+- Title: Syllens API
+- Description: Student-focused Agentic RAG learning platform with evidence-backed answers
+- Document version: 1.0.0
+
+### 3. Swagger Endpoints
+
+Swagger UI:
+
+`http://localhost:3000/api/docs`
+
+OpenAPI JSON:
+
+`http://localhost:3000/api/docs-json`
+
+The OpenAPI JSON can be used by tools that support importing or generating clients from an API specification.
+
+### 4. Health Endpoint Documentation
+
+Updated `src/health/health.controller.ts` with Swagger decorators:
+
+- `@ApiTags('Health')` — Groups related endpoints.
+- `@ApiOperation()` — Describes the endpoint.
+- `@ApiOkResponse()` — Documents the successful response.
+
+Documented endpoint:
+
+`GET /health`
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "application": "Syllens",
+  "message": "Syllens API is running"
+}
+```
+
+### 5. Execution Flow
+
+1. NestJS starts the application.
+2. SwaggerModule reads controller metadata and Swagger decorators.
+3. An OpenAPI specification is generated when requested.
+4. Swagger UI displays the documented endpoints.
+5. Developers can execute requests through the Swagger interface.
+6. NestJS processes the requests and returns their responses.
+
+### 6. Verification
+
+Start the application:
+
+```bash
+npm run start:dev
+```
+
+Verify Swagger UI:
+
+`http://localhost:3000/api/docs`
+
+Verify the OpenAPI specification:
+
+```bash
+curl http://localhost:3000/api/docs-json
+```
+
+Verify application health:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Run quality checks:
+
+```bash
+npm run build
+npm test -- --runInBand
+npm run lint
+```
+
+**Verification status:** Completed.
+
+### 7. Concepts Learned
+
+- OpenAPI specifications
+- Swagger UI
+- API documentation generation
+- NestJS Swagger decorators
+- DocumentBuilder configuration
+- Interactive API testing
+- JSON API specification
+- API documentation as part of backend engineering
+
+### 8. Security Considerations
+
+Swagger documentation is currently enabled for local development.
+
+Before production deployment, documentation access must be reviewed and appropriately restricted or disabled.
+
+### 9. Next Step
+
+** Step 3: Request Validation
+
+We will learn how to validate incoming API requests using DTOs and global validation mechanisms.

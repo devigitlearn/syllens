@@ -2,6 +2,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,6 +10,24 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const port = configService.getOrThrow<number>('PORT');
+
+  // Swagger / OpenAPI configuration
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Syllens API')
+    .setDescription(
+      'Student-focused Agentic RAG learning platform with evidence-backed answers.',
+    )
+    .setVersion('1.0.0')
+    .addTag('Health', 'Application health endpoints')
+    .build();
+
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, swaggerConfig);
+
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    jsonDocumentUrl: 'api/docs-json',
+  });
+
 
   await app.listen(port);
 
