@@ -5,6 +5,8 @@ import { HealthModule } from './health/health.module';
 import { ConfigModule } from '@nestjs/config';
 import { envValidationSchema } from './config/env.validation';
 import { StudyQuestionsModule } from './study-questions/study-questions.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -17,6 +19,12 @@ import { StudyQuestionsModule } from './study-questions/study-questions.module';
     StudyQuestionsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule { }

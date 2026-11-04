@@ -603,3 +603,128 @@ npm run lint
 Step 4: API Error Handling and Response Conventions.
 
 Establish consistent error responses, safe exception handling, and API route conventions before implementing document upload functionality.
+
+## Leeson 4: Global API Error Handling
+
+### Objective - 4
+
+Implement a centralized exception-handling mechanism in the Syllens NestJS backend to produce consistent, secure, and predictable API error responses.
+
+### 1. What Is an Exception Filter?
+
+An exception filter intercepts errors thrown during request processing and controls the HTTP error response returned to the client.
+
+NestJS provides built-in exception handling, but custom filters allow applications to standardize response formats and logging behavior.
+
+### 2. Implementation
+
+Created:
+
+`src/common/filters/all-exceptions.filter.ts`
+
+Implemented `AllExceptionsFilter` using:
+
+- `@Catch()` to catch HTTP and unexpected exceptions.
+- `HttpException` to identify known HTTP errors.
+- `HttpAdapterHost` to construct HTTP responses.
+- `Logger` to record internal failures.
+
+### 3. Global Registration
+
+Registered the exception filter in `AppModule` using:
+
+```typescript
+{
+  provide: APP_FILTER,
+  useClass: AllExceptionsFilter,
+}
+```
+
+Using `APP_FILTER` allows the exception filter to use NestJS dependency injection.
+
+### 4. Standard Error Response
+
+All errors handled by the filter follow this structure:
+
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "message": ["Validation error details"],
+  "error": "Bad Request",
+  "path": "/study-questions/preview",
+  "timestamp": "<generated ISO timestamp>"
+}
+```
+
+### 5. Error Handling Strategy
+
+| Error Type | HTTP Status | Handling |
+| Invalid request | 400 | Return validation details |
+| Unauthorized | 401 | Return safe authentication error |
+| Forbidden | 403 | Return access-denied response |
+| Resource not found | 404 | Return resource error |
+| Internal exception | 500 | Return generic message; log details server-side |
+
+Sensitive internal exception messages must not be exposed in HTTP 500 responses.
+
+### 6. Verification Test Cases
+
+**Test 1 — Invalid Request
+
+Endpoint: `POST /study-questions/preview`
+
+Expected: HTTP 400 with validation error details.
+
+**Test 2 — Unknown Route
+
+Endpoint: `GET /unknown-route`
+
+Expected: HTTP 404 with the standardized error format.
+
+**Test 3 — Unexpected Exception
+
+Temporary endpoint: `GET /study-questions/test-error`
+
+Expected: HTTP 500 with a generic message and no internal error details.
+
+The temporary testing endpoint must be removed before committing.
+
+### 7. Verification Commands
+
+```bash
+npm run build
+npm test -- --runInBand
+npm run lint
+```
+
+Results: Pending local verification.
+
+### 8. Concepts Learned
+
+1. NestJS exception filters.
+2. Global error handling.
+3. HTTP exception classes and status codes.
+4. Dependency injection using `APP_FILTER`.
+5. Error response standardization.
+6. Safe handling of unexpected exceptions.
+7. Server-side exception logging.
+8. Security considerations for error responses.
+
+### 9. Current Limitations - 4
+
+- Automated exception-filter tests are not yet implemented.
+- Structured request correlation IDs are not included.
+- No centralized monitoring or external log aggregation.
+- Successful API responses have not been standardized.
+- Error conventions currently apply to HTTP requests only.
+
+### 10. Status - 4
+
+Pending final validation.
+
+### Next Step - 4
+
+Lesson 5: API Response Conventions and Route Versioning.
+
+We will establish standard success response structures and predictable API route conventions before implementing document uploads.
